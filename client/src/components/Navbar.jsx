@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
+
+  const { user } = useAuth();
   const [genre, setGenre] = useState("");
   const [author, setAuthor] = useState("");
   const [bookName, setBookName] = useState("");
@@ -28,8 +31,23 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="nav-links">
         <Link to="/">Home</Link>
-        <Link to="/login">Login</Link>
-        <Link to="/register">Sign Up</Link>
+
+        {user ? (
+          <>
+         
+          <Link to="/upload">Upload File</Link>
+           <span>Welcome , {user.username}</span>
+          </>
+        ) : (
+          <>
+            <Link to="/login">Login</Link>
+            <Link to="/register">Sign Up</Link>
+          </>
+        )
+
+
+        }
+
       </div>
 
       <form onSubmit={handleSearch} className="search-form">

@@ -61,7 +61,7 @@ const registerUser = async (req, res) => {
     }
 
     return res.status(200).json(
-        new ApiResponse(200, createdUser , "User registered successfully")
+        new ApiResponse(200, createdUser, "User registered successfully")
     )
 
 }
@@ -166,7 +166,6 @@ const changeCurrentPassword = async (req, res) => {
 
 
 const refreshAccessToken = async (req, res) => {
-
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
     if (!incomingRefreshToken) {
@@ -177,7 +176,7 @@ const refreshAccessToken = async (req, res) => {
         const decodedToken = jwt.verify(
             incomingRefreshToken,
             process.env.REFRESH_TOKEN_SECRET
-        )
+        );
 
         const user = await User.findById(decodedToken?._id);
 
@@ -191,35 +190,46 @@ const refreshAccessToken = async (req, res) => {
 
         const options = {
             httpOnly: true,
-            secure: true
+            secure: true,
+           
         };
 
-        const { accessToken, newrefreshToken } = await generateAccessAndRefreshTokens(user._id);
+        const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id);
+        const userData = await User.findById(user._id).select("-password -refreshToken");
 
         return res
             .status(200)
             .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", refreshAccessToken, options)
+            .cookie("refreshToken", refreshToken, options)
             .json(
                 new ApiResponse(
                     200,
                     {
                         accessToken,
-                        refreshToken: newrefreshToken
-
+                        refreshToken,
+                        user: userData
                     },
                     "Access token refreshed successfully"
                 )
-            )
-
-
+            );
     } catch (error) {
+        throw new ApiError(401, error?.message || "Invalid refresh token");
+    }
+};
 
-        throw new ApiError(500, error?.message || "Invalid refresh token");
-
+const getCurrentUser = async (req, res) => {
+    if (!req.user) {
+        return res.status(401).json(new ApiResponse(401, null, "Not authenticated"));
     }
 
+    res.status(200).json(new ApiResponse(200, req.user, "Current user"));
 }
 
 
-export { registerUser, loginUser, logoutUser , changeCurrentPassword , refreshAccessToken}
+export {
+    registerUser,
+    loginUser, logoutUser,
+    changeCurrentPassword,
+    refreshAccessToken,
+    getCurrentUser
+}

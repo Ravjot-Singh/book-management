@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +11,10 @@ const Login = () => {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const navigate = useNavigate();
+
+  const {setUser} = useAuth();
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -30,8 +36,11 @@ const Login = () => {
       );
 
       setSuccess(res.data?.message || "Login successful!");
+      setUser(res.data.data.user);
 
-       navigate("/");
+        setTimeout(() => {
+        navigate("/"); 
+      }, 1000);
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     }

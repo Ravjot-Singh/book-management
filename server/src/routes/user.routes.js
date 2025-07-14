@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword } from '../controllers/user.controllers.js';
+import { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser } from '../controllers/user.controllers.js';
 import { uploadBook, updateBook, deleteBook, getAllBooks, searchBooks, paginateBooks, downloadBook, previewBook } from '../controllers/book.controllers.js';
 import { verifyJWT } from '../middlewares/auth.middlewares.js';
 import { upload } from '../middlewares/multer.middlewares.js';
@@ -16,7 +16,7 @@ router.route('/login').post(loginUser);
 router.route("/logout").post(verifyJWT, logoutUser);
 router.route('/change-password').post(verifyJWT, changeCurrentPassword);
 router.route('/refresh-token').post(refreshAccessToken);
-
+router.route('/me').get(verifyJWT , getCurrentUser);
 
 // book related routes
 
@@ -27,8 +27,8 @@ router.route('/delete/:id').delete(verifyJWT, deleteBook);
 
 router.route('/search').get(searchBooks);
 router.route('/paginate').get(paginateBooks);
-router.route('/download/:id').get(downloadBook);
-router.route('/preview/:id', previewBook);
+router.route('/download/:id').get( verifyJWT, downloadBook);
+router.route('/preview/:id').get( previewBook);
 
 
 export default router;

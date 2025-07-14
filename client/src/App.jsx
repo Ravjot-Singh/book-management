@@ -7,6 +7,7 @@ import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import SearchResults from "./pages/SearchResults.jsx";
+import Upload from "./pages/Upload.jsx";
 
 const App = () => {
   return (
@@ -20,6 +21,8 @@ const App = () => {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/search" element={<SearchResults />} />
+            <Route path="/upload" element={<Upload />} />
+            
           </Routes>
         </main>
         <Footer />

@@ -2,12 +2,16 @@ import { Book } from "../models/book.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/uploadOnCloudinary.js";
+import http from'http';
+import https from 'https';
+import { pipeline } from "stream";
 import fs from 'fs';
 
 
 const uploadBook = async (req, res) => {
   try {
     if (!req.file) {
+      console.log("No file received by multer"); 
       throw new ApiError(400, "No file uploaded!");
     }
 
@@ -240,13 +244,11 @@ const searchBooks = async (req, res) => {
 }
 
 const downloadBook = async (req, res) => {
-
   try {
-
     const { id } = req.params;
 
     if (!id) {
-      throw new ApiError(400, "Book id id required");
+      throw new ApiError(400, "Book ID is required");
     }
 
     const book = await Book.findById(id).select("content bookName");
@@ -255,18 +257,42 @@ const downloadBook = async (req, res) => {
       throw new ApiError(404, "Book not found!");
     }
 
-    return res.redirect(book.content);
+    const fileUrl = book.content;
+    const fileName = `${book.bookName || "book"}.pdf`;
+
+    // Choose http or https depending on URL
+    const client = fileUrl.startsWith("https") ? https : http;
+
+    client.get(fileUrl, (fileRes) => {
+      if (fileRes.statusCode !== 200) {
+        return res.status(404).json({ message: "File not accessible" });
+      }
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+
+      pipeline(fileRes, res, (err) => {
+        if (err) {
+          console.error("Pipeline error:", err);
+          res.status(500).end("Error streaming file");
+        }
+      });
+    }).on("error", (err) => {
+      console.error("Fetch error:", err);
+      res.status(500).json({ message: "Error fetching file" });
+    });
 
   } catch (error) {
-    throw new ApiError(500, "Error while downloading the book");
+    console.error("Download error:", error);
+    res.status(500).json({ message: "Error while downloading the book" });
   }
-
-
-}
+};
 
 const previewBook = async (req, res) => {
 
-  const { id } = req.params;
+  try{
+
+      const { id } = req.params;
 
   if (!id) {
     throw new ApiError(400, "Book id id required");
@@ -286,6 +312,14 @@ const previewBook = async (req, res) => {
         { previewUrl: book.content },
         "Preview link generated")
     );
+
+  }catch(error){
+
+    console.error("Error while preview : ", error);
+    throw new ApiError(500 , "Error while generating preview");
+
+  }
+
 
 
 };

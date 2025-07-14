@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    username: "",
-    password: ""
-  });
-
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const { setUser } = useAuth();
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -23,7 +25,7 @@ const Register = () => {
     setSuccess("");
 
     try {
-      const res = await axios.post(
+      await axios.post(
         "http://localhost:7000/api/users/register",
         formData,
         {
@@ -31,12 +33,27 @@ const Register = () => {
         }
       );
 
-      setSuccess(res.data?.message || "Registration successful!");
+      const loginResult = await axios.post(
+        "http://localhost:7000/api/users/login",
+        formData,
+        { withCredentials: true }
+      );
 
-      Navigate('/login');
+      setUser(loginResult.data.data.user);
+
+      setSuccess("Registration successful!");
+
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      if (err.response?.status === 409) {
+        setError("Username already exists. Please choose a different one.");
+      } else {
+        setError(err.response?.data?.message || "Registration failed");
+      }
     }
+
   };
 
   return (
