@@ -11,23 +11,24 @@ cloudinary.config({
 const uploadOnCloudinary = async (localFilePath) => {
     try {
         if (!localFilePath) {
-      //      console.log("not file path received ")
+            //      console.log("not file path received ")
             return null
         }
 
 
         //upload the file on cloudinary
         const response = await cloudinary.uploader.upload(localFilePath, {
-            resource_type: "auto",
-            format:"pdf",
-            flags:"attachment"
-        })
+            resource_type: "raw",       
+            type: "upload",              
+            folder: "book-library",      
+            use_filename: true           
+        });
         fs.unlinkSync(localFilePath)
         return response;
 
     } catch (error) {
-    //    console.log("NO file to upload : ", error)
-        fs.unlinkSync(localFilePath) 
+        //    console.log("NO file to upload : ", error)
+        fs.unlinkSync(localFilePath)
         return null;
     }
 }
