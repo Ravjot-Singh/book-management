@@ -2,8 +2,6 @@ import { Book } from "../models/book.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary } from "../utils/uploadOnCloudinary.js";
-import http from'http';
-import https from 'https';
 import { pipeline } from "stream";
 import fetch from "node-fetch";
 import fs from 'fs';
